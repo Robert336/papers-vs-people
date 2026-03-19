@@ -14,7 +14,7 @@ export default function ResultsView({ result }: ResultsViewProps) {
   const [matrix, setMatrix] = useState<AspectEntry[] | undefined>(
     result.comparison_matrix?.aspects ?? [],
   );
-  const { loadingAspect, dive, collapse } = useDeepDive(matrix, setMatrix);
+  const { loadingAspect, dive, toggleRow, expandedRows } = useDeepDive(setMatrix);
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto w-full">
@@ -30,7 +30,8 @@ export default function ResultsView({ result }: ResultsViewProps) {
           aspects={matrix}
           queryId={result.id}
           onDive={(aspectName) => dive(result.id, aspectName)}
-          onCollapse={collapse}
+          onToggle={toggleRow}
+          expandedRows={expandedRows}
           loadingAspect={loadingAspect}
         />
       </div>

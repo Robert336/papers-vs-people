@@ -6,20 +6,31 @@ interface MatrixRowProps {
   aspect: AspectEntry;
   queryId: number;
   onDive: (aspectName: string) => void;
-  onCollapse: (aspectName: string) => void;
+  onToggle: (aspectName: string) => void;
+  expandedRows: Set<string>;
   loadingAspect: string | null;
 }
 
 export default function MatrixRow({
   aspect,
   onDive,
-  onCollapse,
+  onToggle,
+  expandedRows,
   loadingAspect,
 }: MatrixRowProps) {
   const pct = Math.round(aspect.alignment * 100);
   const colorClass = getScoreColor(aspect.alignment);
-  const isExpanded = !!aspect.deepDive;
+  const isExpanded = expandedRows.has(aspect.name);
+  const hasDeepDive = !!aspect.deepDive;
   const isLoading = loadingAspect === aspect.name;
+
+  const handleButtonClick = () => {
+    if (hasDeepDive) {
+      onToggle(aspect.name);
+    } else if (!isLoading) {
+      onDive(aspect.name);
+    }
+  };
 
   return (
     <div className="border-b border-slate-700 last:border-0">
@@ -45,8 +56,8 @@ export default function MatrixRow({
             />
           </div>
           <button
-            onClick={() => isExpanded ? onCollapse(aspect.name) : onDive(aspect.name)}
-            disabled={isLoading}
+            onClick={handleButtonClick}
+            disabled={isLoading && !hasDeepDive}
             className="text-xs text-primary-400 hover:text-primary-300 disabled:opacity-50 transition-colors flex items-center gap-1"
           >
             {isLoading ? (
@@ -59,6 +70,8 @@ export default function MatrixRow({
               </>
             ) : isExpanded ? (
               '▲ Collapse'
+            ) : hasDeepDive ? (
+              '▼ View Details'
             ) : (
               '▼ Dive Deeper'
             )}
@@ -66,11 +79,11 @@ export default function MatrixRow({
         </div>
       </div>
 
-      {isExpanded && aspect.deepDive && (
+      {isExpanded && hasDeepDive && (
         <div className="px-4 pb-4">
           <DeepDivePanel
             deepDive={aspect.deepDive as DeepDiveResponse}
-            onCollapse={() => onCollapse(aspect.name)}
+            onCollapse={() => onToggle(aspect.name)}
           />
         </div>
       )}

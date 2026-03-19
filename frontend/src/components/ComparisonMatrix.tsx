@@ -5,7 +5,8 @@ interface ComparisonMatrixProps {
   aspects: AspectEntry[] | undefined;
   queryId: number;
   onDive: (aspectName: string) => void;
-  onCollapse: (aspectName: string) => void;
+  onToggle: (aspectName: string) => void;
+  expandedRows: Set<string>;
   loadingAspect: string | null;
 }
 
@@ -13,7 +14,8 @@ export default function ComparisonMatrix({
   aspects,
   queryId,
   onDive,
-  onCollapse,
+  onToggle,
+  expandedRows,
   loadingAspect,
 }: ComparisonMatrixProps) {
   if (!aspects || aspects.length === 0) {
@@ -38,7 +40,8 @@ export default function ComparisonMatrix({
           aspect={aspect}
           queryId={queryId}
           onDive={onDive}
-          onCollapse={onCollapse}
+          onToggle={onToggle}
+          expandedRows={expandedRows}
           loadingAspect={loadingAspect}
         />
       ))}
