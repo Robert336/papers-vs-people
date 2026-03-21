@@ -5,7 +5,7 @@ from functools import lru_cache
 class Settings(BaseSettings):
     openrouter_api_key: str = ""
     exa_api_key: str = ""
-    db_url: str = "sqlite+aiosqlite:///./academia_vs_reality.db"
+    db_url: str = "sqlite+aiosqlite:///./papers_vs_people.db"
     openrouter_model: str = "openai/gpt-5.4"
 
     class Config:
