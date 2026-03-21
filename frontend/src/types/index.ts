@@ -31,6 +31,18 @@ export interface ComparisonMatrix {
   aspects: AspectEntry[];
 }
 
+export type SearchMode = 'pharma' | 'natural';
+
+export const SOCIAL_PLATFORM_DOMAINS: Record<string, string[]> = {
+  reddit: ['reddit.com'],
+  x: ['x.com', 'twitter.com'],
+  tiktok: ['tiktok.com'],
+  youtube: ['youtube.com'],
+  'drugs.com': ['drugs.com'],
+  webmd: ['webmd.com'],
+  quora: ['quora.com'],
+};
+
 export interface SearchResponse {
   id: number;
   medication_name: string;
@@ -39,7 +51,12 @@ export interface SearchResponse {
   comparison_matrix: ComparisonMatrix;
   academic_sources: SourceItem[];
   social_sources: SourceItem[];
+  social_platforms: string[] | null;
   created_at: string;
+  cost: number;
+  model_used?: string;
+  mode?: SearchMode;
+  deep_dives?: DeepDiveResponse[];
 }
 
 export interface HistoryItem {
@@ -47,6 +64,8 @@ export interface HistoryItem {
   medication_name: string;
   overall_alignment: number;
   created_at: string;
+  model_used?: string;
+  mode?: SearchMode;
 }
 
 export interface DeepDiveRequest {
@@ -67,4 +86,24 @@ export interface DeepDiveResponse {
   academic_sources: SourceItem[];
   social_sources: SourceItem[];
   created_at: string;
+  cost: number;
+}
+
+export interface CompareSearchRequest {
+  query: string;
+  social_platforms?: string[];
+  model_a: string;
+  model_b: string;
+  mode?: SearchMode;
+}
+
+export interface CompareSearchResponse {
+  result_a: SearchResponse;
+  result_b: SearchResponse;
+}
+
+export interface OpenRouterModel {
+  id: string;
+  name: string;
+  description?: string;
 }

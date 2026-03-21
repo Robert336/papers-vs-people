@@ -27,24 +27,28 @@ export default function ComparisonMatrix({
   }
 
   return (
-    <div className="bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden">
-      <div className="bg-slate-900 border-b border-slate-700 grid grid-cols-12 gap-2 px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+      <div className="hidden md:grid md:grid-cols-12 gap-2 px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
         <div className="col-span-2">Aspect</div>
         <div className="col-span-4">What Research Says</div>
         <div className="col-span-4">What People Report</div>
         <div className="col-span-2 text-center">Alignment</div>
       </div>
-      {aspects.map((aspect) => (
-        <MatrixRow
-          key={aspect.name}
-          aspect={aspect}
-          queryId={queryId}
-          onDive={onDive}
-          onToggle={onToggle}
-          expandedRows={expandedRows}
-          loadingAspect={loadingAspect}
-        />
-      ))}
+      <div className="overflow-x-auto">
+        <div className="min-w-[600px] md:min-w-0">
+          {aspects.map((aspect) => (
+            <MatrixRow
+              key={aspect.name}
+              aspect={aspect}
+              queryId={queryId}
+              onDive={onDive}
+              onToggle={onToggle}
+              expandedRows={expandedRows}
+              loadingAspect={loadingAspect}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

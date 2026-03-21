@@ -1,7 +1,10 @@
 import httpx
+import asyncio
+import logging
 from app.config import get_settings
 from typing import Any
 
+logger = logging.getLogger(__name__)
 settings = get_settings()
 
 ACADEMIC_DOMAINS = [
@@ -21,6 +24,35 @@ ACADEMIC_DOMAINS = [
     "nature.com",
 ]
 
+NATURAL_ACADEMIC_DOMAINS = [
+    "pubmed.gov",
+    "ncbi.nlm.nih.gov",
+    "clinicaltrials.gov",
+    "nih.gov",
+    "nccih.nih.gov",
+    "cochrane.org",
+    "sciencedirect.com",
+    "springer.com",
+    "wiley.com",
+    "nature.com",
+    "bmj.com",
+    "frontiersin.org",
+    "mskcc.org",
+    "examine.com",
+    "mdpi.com",
+]
+
+QUERY_ENRICHMENT = {
+    "pharma": {
+        "academic": "clinical research efficacy side effects medical study",
+        "social": "experience review side effects personal testimonial",
+    },
+    "natural": {
+        "academic": "herbal supplement clinical trial efficacy safety natural medicine",
+        "social": "natural remedy experience review personal testimonial supplement herb",
+    },
+}
+
 SOCIAL_DOMAINS = [
     "reddit.com",
     "x.com",
@@ -34,6 +66,18 @@ SOCIAL_DOMAINS = [
     "quora.com",
 ]
 
+SOCIAL_PLATFORM_DOMAINS = {
+    "reddit": ["reddit.com"],
+    "x": ["x.com", "twitter.com"],
+    "tiktok": ["tiktok.com"],
+    "youtube": ["youtube.com"],
+    "drugs.com": ["drugs.com"],
+    "webmd": ["webmd.com"],
+    "quora": ["quora.com"],
+}
+
+ALL_PLATFORMS = list(SOCIAL_PLATFORM_DOMAINS.keys())
+
 
 def _build_exa_headers() -> dict:
     if not settings.exa_api_key:
@@ -44,16 +88,26 @@ def _build_exa_headers() -> dict:
     }
 
 
-async def search_academic(query: str, num_results: int = 15) -> list[dict[str, Any]]:
-    if not settings.exa_api_key:
-        return []
+def _extract_exa_cost(data: dict) -> float:
+    cost_dollars = data.get("costDollars", {})
+    if isinstance(cost_dollars, dict):
+        return cost_dollars.get("total", 0.0) or 0.0
+    return 0.0
 
-    domains_query = " OR ".join(ACADEMIC_DOMAINS)
+
+async def search_academic(query: str, num_results: int = 15, mode: str = "pharma") -> tuple[list[dict[str, Any]], float]:
+    if not settings.exa_api_key:
+        return [], 0.0
+
+    enrichment = QUERY_ENRICHMENT.get(mode, QUERY_ENRICHMENT["pharma"])["academic"]
+    domains = NATURAL_ACADEMIC_DOMAINS if mode == "natural" else ACADEMIC_DOMAINS
+
     payload = {
-        "query": f"{query} clinical research efficacy side effects medical study",
+        "query": f"{query} {enrichment}",
         "num_results": num_results,
-        "domains": ACADEMIC_DOMAINS,
+        "category": "research paper",
         "type": "auto",
+        "include_domains": domains,
         "text": {"max_characters": 2000},
     }
 
@@ -66,7 +120,7 @@ async def search_academic(query: str, num_results: int = 15) -> list[dict[str, A
             )
             response.raise_for_status()
             data = response.json()
-            return [
+            results = [
                 {
                     "title": result.get("title", ""),
                     "url": result.get("url", ""),
@@ -76,18 +130,42 @@ async def search_academic(query: str, num_results: int = 15) -> list[dict[str, A
                 }
                 for result in data.get("results", [])
             ]
+            cost = _extract_exa_cost(data)
+            return results, cost
         except httpx.HTTPStatusError as e:
-            return []
+            logger.warning(f"Exa academic search HTTP error: {e.response.status_code} for query: {query}")
+            return [], 0.0
+        except httpx.RequestError as e:
+            logger.warning(f"Exa academic search request error: {e} for query: {query}")
+            return [], 0.0
+        except asyncio.TimeoutError:
+            logger.warning(f"Exa academic search timeout for query: {query}")
+            return [], 0.0
 
 
-async def search_social(query: str, num_results: int = 20) -> list[dict[str, Any]]:
+async def search_social(query: str, platforms: list[str] | None = None, num_results: int = 20, mode: str = "pharma") -> tuple[list[dict[str, Any]], float]:
     if not settings.exa_api_key:
-        return []
+        return [], 0.0
+
+    if platforms is None:
+        platforms = ALL_PLATFORMS
+
+    domains = []
+    for platform in platforms:
+        if platform in SOCIAL_PLATFORM_DOMAINS:
+            domains.extend(SOCIAL_PLATFORM_DOMAINS[platform])
+
+    if not domains:
+        domains = SOCIAL_DOMAINS
+
+    logger.info(f"Exa search_social - platforms: {platforms}, domains: {domains}, mode: {mode}")
+
+    enrichment = QUERY_ENRICHMENT.get(mode, QUERY_ENRICHMENT["pharma"])["social"]
 
     payload = {
-        "query": f"{query} experience review side effects personal testimonial",
+        "query": f"{query} {enrichment}",
         "num_results": num_results,
-        "domains": SOCIAL_DOMAINS,
+        "include_domains": domains,
         "type": "auto",
         "text": {"max_characters": 1500},
     }
@@ -101,7 +179,7 @@ async def search_social(query: str, num_results: int = 20) -> list[dict[str, Any
             )
             response.raise_for_status()
             data = response.json()
-            return [
+            results = [
                 {
                     "title": result.get("title", ""),
                     "url": result.get("url", ""),
@@ -111,18 +189,27 @@ async def search_social(query: str, num_results: int = 20) -> list[dict[str, Any
                 }
                 for result in data.get("results", [])
             ]
+            cost = _extract_exa_cost(data)
+            return results, cost
         except httpx.HTTPStatusError as e:
-            return []
+            logger.warning(f"Exa social search HTTP error: {e.response.status_code} for query: {query}")
+            return [], 0.0
+        except httpx.RequestError as e:
+            logger.warning(f"Exa social search request error: {e} for query: {query}")
+            return [], 0.0
+        except asyncio.TimeoutError:
+            logger.warning(f"Exa social search timeout for query: {query}")
+            return [], 0.0
 
 
 async def search_targeted(
-    query: str, focus: str, num_results: int = 15
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    academic_task = search_academic(f"{query} {focus}", num_results=num_results)
-    social_task = search_social(f"{query} {focus}", num_results=num_results)
+    query: str, focus: str, platforms: list[str] | None = None, num_results: int = 15, mode: str = "pharma"
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], float]:
+    academic_task = search_academic(f"{query} {focus}", num_results=num_results, mode=mode)
+    social_task = search_social(f"{query} {focus}", platforms=platforms, num_results=num_results, mode=mode)
 
-    academic_results, social_results = await asyncio.gather(academic_task, social_task)
-    return academic_results, social_results
+    (academic_results, academic_cost), (social_results, social_cost) = await asyncio.gather(academic_task, social_task)
+    return academic_results, social_results, academic_cost + social_cost
 
 
 def _extract_domain(url: str) -> str:
@@ -134,6 +221,3 @@ def _extract_domain(url: str) -> str:
         return parsed.netloc.replace("www.", "")
     except Exception:
         return url
-
-
-import asyncio

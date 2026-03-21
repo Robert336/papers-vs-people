@@ -19,8 +19,28 @@ async def deep_dive(request: DeepDiveRequest):
         if not query:
             raise HTTPException(status_code=404, detail="Query not found")
 
+        # Check if we already have a cached deep dive for this query + aspect
+        existing = await session.execute(
+            select(DeepDive).where(
+                DeepDive.query_id == request.query_id,
+                DeepDive.aspect_name == request.aspect_name,
+            )
+        )
+        cached = existing.scalar_one_or_none()
+        if cached:
+            return DeepDiveResponse(
+                id=cached.id,
+                query_id=cached.query_id,
+                aspect_name=cached.aspect_name,
+                detailed_analysis=cached.detailed_analysis,
+                academic_sources=cached.academic_sources,
+                social_sources=cached.social_sources,
+                created_at=cached.created_at,
+                cost=cached.cost,
+            )
+
         deep_results = await analysis_service.run_deep_dive(
-            query.medication_name, request.aspect_name
+            query.medication_name, request.aspect_name, platforms=query.social_platforms, mode=query.mode
         )
 
         deep_dive = DeepDive(
@@ -29,6 +49,7 @@ async def deep_dive(request: DeepDiveRequest):
             detailed_analysis=deep_results["analysis"],
             academic_sources=deep_results["academic_results"],
             social_sources=deep_results["social_results"],
+            cost=deep_results.get("cost", 0.0),
         )
         session.add(deep_dive)
         await session.commit()
@@ -42,4 +63,5 @@ async def deep_dive(request: DeepDiveRequest):
             academic_sources=deep_dive.academic_sources,
             social_sources=deep_dive.social_sources,
             created_at=deep_dive.created_at,
+            cost=deep_dive.cost,
         )

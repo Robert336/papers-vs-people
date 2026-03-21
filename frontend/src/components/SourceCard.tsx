@@ -30,12 +30,12 @@ export default function SourceCard({ sources, type }: SourceCardProps) {
   if (!sources || sources.length === 0) return null;
 
   const label = type === 'academic' ? 'Academic Sources' : 'Social Sources';
-  const borderColor = type === 'academic' ? 'border-slate-600' : 'border-slate-600';
-  const labelColor = type === 'academic' ? 'text-primary-400' : 'text-accent-400';
-  const icon = type === 'academic' ? '📚' : '💬';
+  const borderColor = type === 'academic' ? 'border-slate-200' : 'border-slate-200';
+  const labelColor = type === 'academic' ? 'text-green-700' : 'text-green-700';
+  const icon = type === 'academic' ? '📘' : '📲';
 
   return (
-    <div className={`border ${borderColor} rounded-lg p-4`}>
+    <div className={`border ${borderColor} rounded-lg p-4 bg-white`}>
       <h4 className={`text-sm font-semibold mb-3 flex items-center gap-2 ${labelColor}`}>
         <span>{icon}</span> {label}
       </h4>
@@ -47,7 +47,7 @@ export default function SourceCard({ sources, type }: SourceCardProps) {
               href={s.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-slate-300 hover:text-primary-400 transition-colors line-clamp-2 leading-snug"
+              className="text-sm text-slate-600 hover:text-green-600 transition-colors line-clamp-2 leading-snug"
             >
               {s.title || s.url}
             </a>

@@ -26,17 +26,17 @@ export default function QueryHistory({
   }, [onFetch]);
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
+    <div className="fixed inset-0 z-50 flex justify-end max-w-[100vw] overflow-x-hidden">
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative w-full max-w-md bg-slate-900 border-l border-slate-700 h-full overflow-y-auto p-6">
+      <div className="relative w-full max-w-md max-w-full bg-white border-l border-slate-200 h-full overflow-y-auto overflow-x-hidden p-6 shadow-xl overscroll-behavior-contain">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-slate-100">Search History</h2>
+          <h2 className="text-xl font-bold text-slate-800">Search History</h2>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-200 transition-colors"
+            className="text-slate-400 hover:text-slate-600 transition-colors"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -66,22 +66,32 @@ export default function QueryHistory({
               return (
                 <li
                   key={item.id}
-                  className={`bg-slate-800 border rounded-lg p-4 group ${isActive ? 'border-primary-500' : 'border-slate-700 hover:border-slate-500'} transition-colors`}
+                  className={`bg-slate-50 border rounded-lg p-4 group ${isActive ? 'border-green-500' : 'border-slate-200 hover:border-slate-300'} transition-colors`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <button
                       onClick={() => onLoad(item.id)}
                       className="flex-1 text-left"
                     >
-                      <p className={`font-semibold ${isActive ? 'text-primary-400' : 'text-slate-100'}`}>
+                      <p className={`font-semibold ${isActive ? 'text-green-700' : 'text-slate-800'}`}>
                         {item.medication_name}
+                        {item.mode === 'natural' && (
+                          <span className="ml-2 inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium bg-amber-50 text-amber-600 border border-amber-200 rounded">
+                            Natural
+                          </span>
+                        )}
+                        {item.model_used && (
+                          <span className="ml-2 inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200 rounded">
+                            {item.model_used}
+                          </span>
+                        )}
                       </p>
-                      <p className="text-xs text-slate-500 mt-1">{date}</p>
+                      <p className="text-xs text-slate-400 mt-1">{date}</p>
                       <p className={`text-sm mt-1 ${colorClass}`}>{pct}% alignment</p>
                     </button>
                     <button
                       onClick={() => onDelete(item.id)}
-                      className="text-slate-600 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                      className="text-slate-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
                       title="Delete"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
