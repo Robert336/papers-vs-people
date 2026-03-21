@@ -86,10 +86,10 @@ function HomePage() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center font-bold text-sm text-white">
-              A
+              P
             </div>
             <div>
-              <h1 className="font-bold text-slate-800 text-lg leading-none">Academia vs Reality</h1>
+              <h1 className="font-bold text-slate-800 text-lg leading-none">Papers vs People</h1>
               <p className="text-xs text-slate-500 leading-none mt-0.5">Compare research to lived experience</p>
             </div>
           </div>
@@ -227,10 +227,10 @@ function HowThisWorksPage() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center font-bold text-sm text-white">
-              A
+              P
             </div>
             <div>
-              <h1 className="font-bold text-slate-800 text-lg leading-none">Academia vs Reality</h1>
+              <h1 className="font-bold text-slate-800 text-lg leading-none">Papers vs People</h1>
               <p className="text-xs text-slate-500 leading-none mt-0.5">Compare research to lived experience</p>
             </div>
           </div>
