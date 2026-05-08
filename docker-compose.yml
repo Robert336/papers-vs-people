@@ -1,0 +1,27 @@
+services:
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file: ./backend/.env
+    volumes:
+      - db_data:/app/data
+    environment:
+      - DB_URL=sqlite+aiosqlite:////app/data/papers_vs_people.db
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - default
+      - homelab
+
+volumes:
+  db_data:
+
+networks:
+  homelab:
+    external: true
