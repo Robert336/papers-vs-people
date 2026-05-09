@@ -10,7 +10,6 @@ import { getFilteredFlatSourceList, filterSourcesByPlatforms, deduplicateSources
 
 interface ResultsViewProps {
   result: SearchResponse;
-  onDeepDiveCost?: (cost: number) => void;
   isCompareMode?: boolean;
   resultA?: SearchResponse | null;
   resultB?: SearchResponse | null;
@@ -20,7 +19,6 @@ interface ResultsViewProps {
 
 export default function ResultsView({
   result,
-  onDeepDiveCost,
   isCompareMode,
   resultA,
   resultB,
@@ -57,10 +55,7 @@ export default function ResultsView({
   const allSources = getFilteredFlatSourceList(result);
 
   const handleDive = async (aspectName: string) => {
-    const cost = await dive(result.id, aspectName);
-    if (cost > 0 && onDeepDiveCost) {
-      onDeepDiveCost(cost);
-    }
+    await dive(result.id, aspectName);
   };
 
   const modelLabelA = resultA?.model_used;

@@ -4,10 +4,8 @@ import SearchBar from './components/SearchBar';
 import ResultsView from './components/ResultsView';
 import Loading from './components/Loading';
 import QueryHistory from './components/QueryHistory';
-import PriceTracker from './components/PriceTracker';
 import { useSearch } from './hooks/useSearch';
 import { useHistory } from './hooks/useHistory';
-import { usePriceTracker } from './hooks/usePriceTracker';
 import { useLastState } from './hooks/useLastState';
 import type { SearchResponse } from './types';
 
@@ -60,8 +58,6 @@ function HomePage() {
     }
   }, [displayResult, saveLastState, isCompareMode]);
 
-  const { totalCost, deepDiveCount, addDeepDiveCost, reset } = usePriceTracker(displayResult?.cost);
-
   const handleLoadFromHistory = useCallback(
     async (id: number) => {
       const data = await loadItem(id);
@@ -76,9 +72,8 @@ function HomePage() {
   const handleNewSearch = useCallback(() => {
     setHistoryResult(null);
     clear();
-    reset();
     clearLastState();
-  }, [clear, reset, clearLastState]);
+  }, [clear, clearLastState]);
 
   return (
     <>
@@ -168,7 +163,6 @@ function HomePage() {
           <ResultsView
             key={displayResult.id}
             result={displayResult}
-            onDeepDiveCost={addDeepDiveCost}
             isCompareMode={isCompareMode}
             resultA={resultA}
             resultB={resultB}
@@ -202,7 +196,6 @@ function HomePage() {
         />
       )}
 
-      <PriceTracker totalCost={totalCost} deepDiveCount={deepDiveCount} />
     </>
   );
 }
